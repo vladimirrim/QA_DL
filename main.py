@@ -2,7 +2,7 @@ import json
 import os
 
 import torch
-import wandb
+import pickle
 
 from configs import Config
 from data_loader import DataLoader, get_text_question_ans_dataset
@@ -17,8 +17,6 @@ def initializeFolders(config):
 
 if __name__ == '__main__':
     config = Config()
-    wandb.login(key='')
-    wandb.init(dir=config.LOG_DIR)
     dataLoader = DataLoader(config)
 
     with open(config.TRAIN_DATASET, 'r') as train_json, open(config.DEV_DATASET, 'r') as dev_json:
@@ -46,11 +44,9 @@ if __name__ == '__main__':
                             mask=masks.to(device),
                             start_positions=torch.tensor(start_pos).to(device),
                             end_positions=torch.tensor(end_pos).to(device))
-            wandb.log({'loss': float(loss)})
             loss.backward()
             optimizer.step()
             if i % 100 == 0:
-                print(f'Model saved on {i} iteration!')
-                torch.save(model.state_dict(), './bert.pt')
+                torch.save(model.state_dict(), config.LOG_DIR + 'bert.ckpt')
                 evaluator.evaluate(dev_dataset)
     evaluator.evaluate(dev_dataset)
