@@ -20,6 +20,7 @@ if __name__ == '__main__':
     dataLoader = DataLoader(config)
     initializeFolders(config)
 
+    print('Starting loading data', flush=True)
     with open(config.TRAIN_DATASET, 'r') as train_json, open(config.DEV_DATASET, 'r') as dev_json:
         train_data = json.load(train_json)
         dev_data = json.load(dev_json)
@@ -40,6 +41,7 @@ if __name__ == '__main__':
     evaluator.evaluate(dev_dataset)
     losses = []
     val_losses = []
+    print('Starting training', flush=True)
     for epoch in range(epochs):
         model.train()
         train_loss = 0
