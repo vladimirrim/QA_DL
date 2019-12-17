@@ -1,14 +1,13 @@
 import pickle
 
 import numpy as np
-
+from transformers import BertTokenizer
 
 class Preprocessor:
 
     def __init__(self, config):
         self.MAX_TEXT_LEN = config.MAX_TEXT_LENGTH
-        with open(config.TOKENIZER_PATH, 'rb') as f:
-            self.tokenizer = pickle.load(f)
+        self.tokenizer = BertTokenizer.from_pretrained(config.BERT_MODEL)
 
     def preprocessWindow(self, text_tokens, length, first, last):
         part_length = length // 3

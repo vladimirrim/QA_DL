@@ -25,9 +25,11 @@ class Evaluator:
         f1 = 0.0
         precision_total = 0.0
         recall_total = 0.0
+        loss = 0
+        total_loss = 0
         with torch.no_grad():
             for datapoint in dev_dataset:
-                answer = datapoint[3].lower()
+                answer = datapoint[2].lower()
                 if answer not in datapoint[0].lower():
                     continue
                 total += 1
@@ -47,6 +49,7 @@ class Evaluator:
                              [self.tokenizer.sep_token]
 
                 length = self.config.MAX_TEXT_LENGTH - len(question_tokens) - 3
+                
                 if len(text_tokens) > length:
                     part_length = length // 3
                     stride = 3 * part_length
@@ -74,8 +77,17 @@ class Evaluator:
                         texts, masks = self.data_loader.pad_sequence([ts])
                         texts = texts.to(self.config.DEVICE)
                         masks = masks.to(self.config.DEVICE)
+                        lfirst = start_pos - i * part_length + 2 + len(question_tokens)
+                        llast = end_pos - i * part_length + 2 + len(question_tokens)
 
-                        probs = self.model(texts, mask=masks)[1]
+                        mask = 0 <= lfirst < len(ts) and 0 <= llast < len(ts)
+                        lfirst *= int(mask)
+                        llast *= int(mask)
+                        batch_loss, probs = self.model(texts, mask=masks,
+                            start_positions=torch.tensor(lfirst).view(-1).to(self.config.DEVICE),
+                            end_positions=torch.tensor(llast).view(-1).to(self.config.DEVICE))
+                        loss += float(batch_loss.cpu())
+                        total_loss += 1
 
                         start_max = torch.argmax(probs[0, :, 0])
                         end_max = torch.argmax(probs[0, :, 1])
@@ -101,9 +113,13 @@ class Evaluator:
                         f1 += 2 * precision * recall / (precision + recall)
                 else:
                     texts, masks = self.data_loader.pad_sequence([all_tokens])
-                    texts = texts.to(self.config.device)
-                    masks = masks.to(self.config.device)
-                    probs = self.model(texts, mask=masks)[1]
+                    texts = texts.to(self.config.DEVICE)
+                    masks = masks.to(self.config.DEVICE)
+                    batch_loss, probs = self.model(texts, mask=masks,
+                            start_positions=torch.tensor(start_pos + 2 + len(question_tokens)).view(-1).to(self.config.DEVICE),
+                            end_positions=torch.tensor(end_pos + 2 + len(question_tokens)).view(-1).to(self.config.DEVICE))
+                    loss += float(batch_loss.cpu())
+                    total_loss += 1
 
                     start_max = torch.argmax(probs[0, :, 0])
                     end_max = torch.argmax(probs[0, :, 1])
@@ -123,8 +139,9 @@ class Evaluator:
                     recall_total += recall
                     if precision + recall != 0:
                         f1 += 2 * precision * recall / (precision + recall)
-        print(f'EM: {correct / total}')
-        print(f'F1: {f1 / total}')
-        print(f'Precision: {precision_total / total}')
-        print(f'Recall: {recall_total / total}')
-        return correct / total, f1 / total, precision_total / total, recall_total / total
+        print(f'EM: {correct / total}', flush=True)
+        print(f'F1: {f1 / total}', flush=True)
+        print(f'Precision: {precision_total / total}', flush=True)
+        print(f'Recall: {recall_total / total}', flush=True)
+        print(f'Loss: {loss / total_loss}', flush=True)
+        return loss / total_loss

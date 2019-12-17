@@ -18,6 +18,7 @@ def initializeFolders(config):
 if __name__ == '__main__':
     config = Config()
     dataLoader = DataLoader(config)
+    initializeFolders(config)
 
     with open(config.TRAIN_DATASET, 'r') as train_json, open(config.DEV_DATASET, 'r') as dev_json:
         train_data = json.load(train_json)
@@ -36,9 +37,12 @@ if __name__ == '__main__':
     device = 'cuda'
     model.to(device)
     evaluator = Evaluator(model, dataLoader.tokenizer, config)
+    evaluator.evaluate(dev_dataset)
     losses = []
+    val_losses = []
     for epoch in range(epochs):
         model.train()
+        train_loss = 0
         for i, (texts, masks, start_pos, end_pos) in enumerate(train_data_loader):
             optimizer.zero_grad()
             loss, _ = model(texts.to(device),
@@ -46,13 +50,19 @@ if __name__ == '__main__':
                             start_positions=torch.tensor(start_pos).to(device),
                             end_positions=torch.tensor(end_pos).to(device))
             loss.backward()
-            losses.append(float(loss))
+            train_loss += float(loss)
             optimizer.step()
             if i % 100 == 0:
                 torch.save(model.state_dict(), config.LOG_DIR + 'bert.ckpt')
-                print()
-                print(f'Model saved on {i} iteration!')
-                evaluator.evaluate(dev_dataset)
+                print(f'Model saved on {i} iteration!', flush=True)
+                if i != 0:
+                    val_loss = evaluator.evaluate(dev_dataset)
+                    val_losses.append(val_loss)
+                    losses.append(train_loss / 100)
+                    train_loss = 0
     evaluator.evaluate(dev_dataset)
     with open(config.LOG_DIR + 'losses.pkl', 'wb') as f:
         pickle.dump(losses, f)
+    with open(config.LOG_DIR + 'val_losses.pkl', 'wb') as f:
+        pickle.dump(val_losses, f)
+

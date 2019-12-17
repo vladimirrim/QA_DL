@@ -1,5 +1,6 @@
 from torch import nn
 from torch.nn import CrossEntropyLoss
+from transformers import BertModel
 
 import torch.nn.functional as F
 
