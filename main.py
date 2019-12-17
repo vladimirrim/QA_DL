@@ -36,6 +36,7 @@ if __name__ == '__main__':
     device = 'cuda'
     model.to(device)
     evaluator = Evaluator(model, dataLoader.tokenizer, config)
+    losses = []
     for epoch in range(epochs):
         model.train()
         for i, (texts, masks, start_pos, end_pos) in enumerate(train_data_loader):
@@ -45,8 +46,13 @@ if __name__ == '__main__':
                             start_positions=torch.tensor(start_pos).to(device),
                             end_positions=torch.tensor(end_pos).to(device))
             loss.backward()
+            losses.append(float(loss))
             optimizer.step()
             if i % 100 == 0:
                 torch.save(model.state_dict(), config.LOG_DIR + 'bert.ckpt')
+                print()
+                print(f'Model saved on {i} iteration!')
                 evaluator.evaluate(dev_dataset)
     evaluator.evaluate(dev_dataset)
+    with open(config.LOG_DIR + 'losses.pkl', 'wb') as f:
+        pickle.dump(losses, f)
