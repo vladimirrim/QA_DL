@@ -1,57 +1,53 @@
-import glob
-import re
+import json
+import os
 
 import torch
-from transformers import BertTokenizer, BertForQuestionAnswering
+import wandb
+
+from configs import Config
+from data_loader import DataLoader
+from model import BertForQuestionAnswering
 
 
-class Dataset:
-    def __init__(self):
-        self.story = ""
-        self.stories = []
-        self.queries = []
-        self.answers = []
-
-    def preprocessLine(self, line):
-        tokens = line.split()
-        story = self.story
-        if tokens[0] == '1':
-            self.story = ""
-        if '?' in line:
-            self.answers.append(tokens[-3])
-            self.queries.append(' '.join(tokens[1:-3]))
-            self.stories.append(story)
-        else:
-            self.story += ' ' + ' '.join(tokens[1:])
+def initializeFolders(config):
+    if not os.path.exists(config.LOG_DIR):
+        os.makedirs(config.LOG_DIR)
 
 
 if __name__ == '__main__':
-    prefix = '.data/tasks_1-20_v1-2/en-valid-10k/'
-    nlp = 'dataset_281937_1.txt'
-    test, train = Dataset(), Dataset()
-    for filename in glob.glob(prefix + '*test.txt'):
-        with open(filename) as f:
-            [test.preprocessLine(line) for line in f.readlines()]
+    config = Config()
+    wandb.login(key='')
+    wandb.init(dir=config.LOG_DIR)
+    dataLoader = DataLoader(config)
 
-    for filename in glob.glob(prefix + '*train.txt'):
-        with open(filename) as f:
-            [train.preprocessLine(line) for line in f.readlines()]
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    model = BertForQuestionAnswering.from_pretrained('bert-large-uncased-whole-word-masking-finetuned-squad')
+    with open(config.TRAIN_DATASET, 'r') as train_json, open(config.DEV_DATASET, 'r') as dev_json:
+        train_data = json.load(train_json)
+        dev_data = json.load(dev_json)
 
-    total = 0
-    tp = 0
-    for q, a, s in zip(test.queries, test.answers, test.stories):
-        question, text = q, s
-        input_text = "[CLS] " + question + " [SEP] " + text + " [SEP]"
-        input_ids = tokenizer.encode(input_text)
-        token_type_ids = [0 if i <= input_ids.index(102) else 1 for i in range(len(input_ids))]
-        start_scores, end_scores = model(torch.tensor([input_ids]), token_type_ids=torch.tensor([token_type_ids]))
-        all_tokens = tokenizer.convert_ids_to_tokens(input_ids)
-        predict = re.sub(' ##', '', ' '.join(all_tokens[torch.argmax(start_scores): torch.argmax(end_scores) + 1])).replace('the', '')
-        tp += int(predict.replace(' ', '') == a)
-        total += 1
-    print(tp / total)
+    train_data_loader = dataLoader.get_data_loader(train_data)
+    dev_data_loader = dataLoader.get_data_loader(dev_data)
 
+    model = BertForQuestionAnswering(config)
+    model = model.to(config.DEVICE)
 
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), config.LR,
+                                 weight_decay=0.000001)
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.3)
+    epochs = 3
+    device = 'cuda'
+    model.to(device)
 
+    for epoch in range(epochs):
+        model.train()
+        for i, (texts, masks, start_pos, end_pos) in enumerate(train_data_loader):
+            optimizer.zero_grad()
+            loss, _ = model(texts.to(device),
+                            mask=masks.to(device),
+                            start_positions=torch.tensor(start_pos).to(device),
+                            end_positions=torch.tensor(end_pos).to(device))
+            wandb.log({'loss': float(loss)})
+            loss.backward()
+            optimizer.step()
+            if i % 100 == 0:
+                print(f'Model saved on {i} iteration!')
+                torch.save(model.state_dict(), './gdrive/My Drive/bert.pt')
