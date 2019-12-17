@@ -1,3 +1,5 @@
+import pickle
+
 import torch
 from transformers import BertTokenizer
 
@@ -16,7 +18,8 @@ def get_text_question_ans_dataset(squad_dataset):
 
 class DataLoader:
     def __init__(self, config):
-        self.tokenizer = BertTokenizer.from_pretrained(config.BERT_MODEL, do_lower_case=False)
+        with open(config.TOKENIZER_PATH, 'rb') as f:
+            self.tokenizer = pickle.load(f)
         self.preprocessor = Preprocessor(config)
 
     def pad_sequence(self, texts):
