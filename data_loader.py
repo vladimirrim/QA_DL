@@ -1,7 +1,6 @@
 import pickle
 
 import torch
-from transformers import BertTokenizer
 
 from preprocessing import Preprocessor
 
