@@ -5,7 +5,8 @@ import torch
 import wandb
 
 from configs import Config
-from data_loader import DataLoader
+from data_loader import DataLoader, get_text_question_ans_dataset
+from evaluation import Evaluator
 from model import BertForQuestionAnswering
 
 
@@ -25,7 +26,7 @@ if __name__ == '__main__':
         dev_data = json.load(dev_json)
 
     train_data_loader = dataLoader.get_data_loader(train_data)
-    dev_data_loader = dataLoader.get_data_loader(dev_data)
+    dev_dataset = get_text_question_ans_dataset(dev_data)
 
     model = BertForQuestionAnswering(config)
     model = model.to(config.DEVICE)
@@ -36,7 +37,7 @@ if __name__ == '__main__':
     epochs = 3
     device = 'cuda'
     model.to(device)
-
+    evaluator = Evaluator(model, dataLoader.tokenizer, config)
     for epoch in range(epochs):
         model.train()
         for i, (texts, masks, start_pos, end_pos) in enumerate(train_data_loader):
@@ -50,4 +51,6 @@ if __name__ == '__main__':
             optimizer.step()
             if i % 100 == 0:
                 print(f'Model saved on {i} iteration!')
-                torch.save(model.state_dict(), './gdrive/My Drive/bert.pt')
+                torch.save(model.state_dict(), './bert.pt')
+                evaluator.evaluate(dev_dataset)
+    evaluator.evaluate(dev_dataset)
