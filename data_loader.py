@@ -47,5 +47,5 @@ class DataLoader:
             tokens, labels = self.preprocessor.preprocess(datapoint[0], datapoint[1], datapoint[2])
             dataset_tokens += tokens
             dataset_labels += labels
-        return torch.utils.data.DataLoader(list(zip(dataset_tokens, dataset_labels)), batch_size=16, shuffle=True,
-                                           collate_fn=self.collate_fn)
+        return torch.utils.data.DataLoader(list(zip(dataset_tokens, dataset_labels)), batch_size=self.config.BATCH_SIZE,
+                                           shuffle=True, collate_fn=self.collate_fn)

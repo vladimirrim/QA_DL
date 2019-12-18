@@ -7,5 +7,6 @@ class Config:
         self.DEV_DATASET = '/mnt/data/QA_DL/dev-v1.1.json'
         self.TRAIN_DATASET = '/mnt/data/QA_DL/train-v1.1.json'
         self.MAX_TEXT_LENGTH = 256
+        self.BATCH_SIZE = 64
         self.DEVICE = 'cuda'
         self.LR = 0.00005
