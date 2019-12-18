@@ -54,14 +54,16 @@ if __name__ == '__main__':
             loss.backward()
             train_loss += float(loss)
             optimizer.step()
-            if i % 100 == 0:
+            if (i + 1) % 100 == 0:
                 torch.save(model.state_dict(), config.LOG_DIR + 'bert.ckpt')
                 print(f'Model saved on {i} iteration!', flush=True)
-                if i != 0:
-                    val_loss = evaluator.evaluate(dev_dataset)
-                    val_losses.append(val_loss)
-                    losses.append(train_loss / 100)
-                    train_loss = 0
+                losses.append(train_loss / 100)
+                train_loss = 0
+                print(f'Train loss: {losses[-1]}')
+
+            if (i + 1) % 1000 == 0:
+                val_loss = evaluator.evaluate(dev_dataset)
+                val_losses.append(val_loss)
     evaluator.evaluate(dev_dataset)
     with open(config.LOG_DIR + 'losses.pkl', 'wb') as f:
         pickle.dump(losses, f)
