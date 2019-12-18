@@ -7,8 +7,10 @@ import pickle
 
 from configs import Config
 from data_loader import DataLoader, get_text_question_ans_dataset
+from elmo import create_elmo
 from evaluation import Evaluator
-from model import BertForQuestionAnswering, BertForQuestionAnsweringLSTM, BertForQuestionAnsweringConvLSTM
+from model import BertForQuestionAnswering, BertForQuestionAnsweringLSTM, BertForQuestionAnsweringConvLSTM, \
+    BertForQuestionAnsweringElmo
 
 
 def initializeFolders(config):
@@ -18,7 +20,8 @@ def initializeFolders(config):
 
 if __name__ == '__main__':
     config = Config()
-    dataLoader = DataLoader(config)
+    elmo = create_elmo(config)
+    dataLoader = DataLoader(config, elmo)
     initializeFolders(config)
 
     print('Starting loading data', flush=True)
@@ -29,7 +32,7 @@ if __name__ == '__main__':
     train_data_loader = dataLoader.get_data_loader(train_data)
     dev_data_loader = dataLoader.get_data_loader(dev_data)
 
-    model = BertForQuestionAnswering(config)
+    model = BertForQuestionAnsweringElmo(config)
     model = model.to(config.DEVICE)
 
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), config.LR,
@@ -85,9 +88,12 @@ if __name__ == '__main__':
                     print(f'Loss train: {losses[-1]}', flush=True)
                     print(f'Loss dev: {val_losses[-1]}', flush=True)
                     model.train()
-
     with open(config.LOG_DIR + 'losses.pkl', 'wb') as f:
         pickle.dump(losses, f)
     with open(config.LOG_DIR + 'val_losses.pkl', 'wb') as f:
         pickle.dump(val_losses, f)
+
+    print(f'Starting evaluation')
+    dev_dataset = get_text_question_ans_dataset(dev_data)
+    evaluator.evaluate(dev_dataset)
 

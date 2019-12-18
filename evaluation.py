@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 
-from data_loader import DataLoader
-
+from data_loader import DataLoader, merge_to_words_all_sentences
+from allennlp.modules.elmo import batch_to_ids
 
 def calculate_intersection_len(a, b, c, d):
     left = max(a, c)
@@ -11,12 +11,13 @@ def calculate_intersection_len(a, b, c, d):
 
 
 class Evaluator:
-    def __init__(self, model, tokenizer, config) -> None:
+    def __init__(self, model, tokenizer, elmo, config) -> None:
         super().__init__()
         self.model = model
         self.tokenizer = tokenizer
         self.config = config
-        self.data_loader = DataLoader(config)
+        self.data_loader = DataLoader(config, elmo)
+        self.elmo = elmo
 
     def evaluate(self, dev_dataset):
         self.model.eval()
@@ -74,6 +75,8 @@ class Evaluator:
                              ts + \
                              [self.tokenizer.sep_token]
 
+                        character_ids = batch_to_ids(merge_to_words_all_sentences([ts])).cuda()
+                        embeddings = self.elmo(character_ids)['elmo_representations'][1]
                         texts, masks = self.data_loader.pad_sequence([ts])
                         texts = texts.to(self.config.DEVICE)
                         masks = masks.to(self.config.DEVICE)
@@ -83,7 +86,7 @@ class Evaluator:
                         mask = 0 <= lfirst < len(ts) and 0 <= llast < len(ts)
                         lfirst *= int(mask)
                         llast *= int(mask)
-                        batch_loss, probs = self.model(texts, mask=masks,
+                        batch_loss, probs = self.model(embeddings, texts, mask=masks,
                             start_positions=torch.tensor(lfirst).view(-1).to(self.config.DEVICE),
                             end_positions=torch.tensor(llast).view(-1).to(self.config.DEVICE))
                         loss += float(batch_loss.cpu())
@@ -112,10 +115,12 @@ class Evaluator:
                     if precision + recall != 0:
                         f1 += 2 * precision * recall / (precision + recall)
                 else:
+                    character_ids = batch_to_ids(merge_to_words_all_sentences([all_tokens])).cuda()
+                    embeddings = self.elmo(character_ids)['elmo_representations'][1]
                     texts, masks = self.data_loader.pad_sequence([all_tokens])
                     texts = texts.to(self.config.DEVICE)
                     masks = masks.to(self.config.DEVICE)
-                    batch_loss, probs = self.model(texts, mask=masks,
+                    batch_loss, probs = self.model(embeddings, texts, mask=masks,
                             start_positions=torch.tensor(start_pos + 2 + len(question_tokens)).view(-1).to(self.config.DEVICE),
                             end_positions=torch.tensor(end_pos + 2 + len(question_tokens)).view(-1).to(self.config.DEVICE))
                     loss += float(batch_loss.cpu())
