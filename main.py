@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 import torch
 import pickle
@@ -26,7 +27,7 @@ if __name__ == '__main__':
         dev_data = json.load(dev_json)
 
     train_data_loader = dataLoader.get_data_loader(train_data)
-    dev_dataset = get_text_question_ans_dataset(dev_data)
+    dev_data_loader = dataLoader.get_data_loader(dev_data)
 
     model = BertForQuestionAnswering(config)
     model = model.to(config.DEVICE)
@@ -38,7 +39,7 @@ if __name__ == '__main__':
     device = 'cuda'
     model.to(device)
     evaluator = Evaluator(model, dataLoader.tokenizer, config)
-    evaluator.evaluate(dev_dataset)
+    start = time.time()
     losses = []
     val_losses = []
     print('Starting training', flush=True)
@@ -60,11 +61,31 @@ if __name__ == '__main__':
                 losses.append(train_loss / 100)
                 train_loss = 0
                 print(f'Train loss: {losses[-1]}')
+                if i % 100 == 0:
+                    torch.save(model.state_dict(), config.LOG_DIR + 'bert.ckpt')
+                    print(f'Model saved on {i} iteration!', flush=True)
+                    end = time.time()
+                    print(f'Elapsed time: {end - start}', flush=True)
+                    start = end
 
-            if (i + 1) % 1000 == 0:
-                val_loss = evaluator.evaluate(dev_dataset)
-                val_losses.append(val_loss)
-    evaluator.evaluate(dev_dataset)
+                    model.eval()
+                    val_loss = 0
+                    cnt = 0
+                    with torch.no_grad():
+                        for texts, masks, start_pos, end_pos in dev_data_loader:
+                            loss, _ = model(texts.to(device),
+                                            mask=masks.to(device),
+                                            start_positions=torch.tensor(start_pos).to(device),
+                                            end_positions=torch.tensor(end_pos).to(device))
+                            val_loss += float(loss)
+                            cnt += 1
+                    val_losses.append(val_loss / cnt)
+                    losses.append(train_loss / 100)
+                    train_loss = 0
+                    print(f'Loss train: {losses[-1]}', flush=True)
+                    print(f'Loss dev: {val_losses[-1]}', flush=True)
+                    model.train()
+
     with open(config.LOG_DIR + 'losses.pkl', 'wb') as f:
         pickle.dump(losses, f)
     with open(config.LOG_DIR + 'val_losses.pkl', 'wb') as f:
