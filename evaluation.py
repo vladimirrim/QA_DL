@@ -144,4 +144,5 @@ class Evaluator:
         print(f'Precision: {precision_total / total}', flush=True)
         print(f'Recall: {recall_total / total}', flush=True)
         print(f'Loss: {loss / total_loss}', flush=True)
+        self.model.train()
         return loss / total_loss

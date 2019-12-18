@@ -77,6 +77,7 @@ class BertForQuestionAnsweringLSTM(nn.Module):
 
         return loss, F.softmax(logits.masked_fill((1 - mask[:, :, None]).bool(), float('-inf')), dim=1)
 
+
 class BertForQuestionAnsweringConvLSTM(nn.Module):
 
     def __init__(self, config, conv_hidden_dims=None):
@@ -85,12 +86,12 @@ class BertForQuestionAnsweringConvLSTM(nn.Module):
             conv_hidden_dims = [8, 16, 4]
         self.bert = BertModel.from_pretrained(config.BERT_MODEL)
         self.bert.eval()
-        self.convLstm = lst = ConvLSTM(input_size=(16, 16), input_dim=3, hidden_dim=conv_hidden_dims,
-                                       kernel_size=(3, 3),
-                                       num_layers=3,
-                                       batch_first=True,
-                                       bias=True,
-                                       return_all_layers=False)
+        self.convLstm = ConvLSTM(input_size=(16, 16), input_dim=3, hidden_dim=conv_hidden_dims,
+                                 kernel_size=(3, 3),
+                                 num_layers=3,
+                                 batch_first=True,
+                                 bias=True,
+                                 return_all_layers=False)
         self.flatten_for_qa = nn.Flatten(start_dim=2)
         self.qa_outputs = nn.Sequential(
             nn.Linear(conv_hidden_dims[-1] * 16 * 16, 512),

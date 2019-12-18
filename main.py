@@ -8,7 +8,7 @@ import pickle
 from configs import Config
 from data_loader import DataLoader, get_text_question_ans_dataset
 from evaluation import Evaluator
-from model import BertForQuestionAnswering
+from model import BertForQuestionAnswering, BertForQuestionAnsweringLSTM, BertForQuestionAnsweringConvLSTM
 
 
 def initializeFolders(config):
