@@ -38,6 +38,7 @@ class DataLoader:
     def __init__(self, config, elmo):
         self.tokenizer = BertTokenizer.from_pretrained(config.BERT_MODEL)
         self.preprocessor = Preprocessor(config)
+        self.config = config
         self.elmo = elmo
 
     def pad_sequence(self, texts):
