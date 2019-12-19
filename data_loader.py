@@ -20,6 +20,7 @@ class DataLoader:
     def __init__(self, config):
         self.tokenizer = BertTokenizer.from_pretrained(config.BERT_MODEL)
         self.preprocessor = Preprocessor(config)
+        self.config = config
 
     def pad_sequence(self, texts):
         max_len = max([len(text) for text in texts])
