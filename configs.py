@@ -9,6 +9,7 @@ class Config:
         self.MAX_TEXT_LENGTH = 256
         self.BATCH_SIZE = 64
         self.DEVICE = 'cuda'
-        self.LR = 0.00005
+        self.LR = 5e-5
+        self.EPS = 1e-8
         self.ELMO_CONFIG = '/mnt/data/QA_DL/elmo/elmo_config.json'
         self.ELMO_WEIGHTS = '/mnt/data/QA_DL/elmo/elmo_2x4096_512_2048cnn_2xhighway_weights.hdf5'

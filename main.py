@@ -5,6 +5,8 @@ import time
 import torch
 import pickle
 
+from transformers import AdamW, get_linear_schedule_with_warmup
+
 from configs import Config
 from data_loader import DataLoader, get_text_question_ans_dataset
 from elmo import create_elmo
@@ -35,10 +37,12 @@ if __name__ == '__main__':
     model = BertForQuestionAnsweringElmo(config)
     model = model.to(config.DEVICE)
 
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), config.LR,
-                                 weight_decay=0.000001)
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.3)
     epochs = 3
+    t_total = len(train_data_loader) * epochs
+
+    optimizer = AdamW(model.parameters(), lr=config.LR, eps=config.EPS, weight_decay=0.0)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=t_total)
+
     device = 'cuda'
     model.to(device)
     evaluator = Evaluator(model, dataLoader.tokenizer, elmo, config)
@@ -60,6 +64,7 @@ if __name__ == '__main__':
             loss.backward()
             train_loss += float(loss)
             optimizer.step()
+            scheduler.step()
             if (i + 1) % 100 == 0:
                 torch.save(model.state_dict(), config.LOG_DIR + 'bert.ckpt')
                 print(f'Model saved on {i} iteration!', flush=True)
