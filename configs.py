@@ -9,4 +9,6 @@ class Config:
         self.MAX_TEXT_LENGTH = 256
         self.BATCH_SIZE = 64
         self.DEVICE = 'cuda'
-        self.LR = 0.00005
+        self.LR = 5e-5
+        self.EPS = 1e-8
+        self.MAX_GRAD_NORM = 1.0
