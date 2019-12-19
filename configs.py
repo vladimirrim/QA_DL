@@ -11,5 +11,6 @@ class Config:
         self.DEVICE = 'cuda'
         self.LR = 5e-5
         self.EPS = 1e-8
+        self.MAX_GRAD_NORM = 1.0
         self.ELMO_CONFIG = '/mnt/data/QA_DL/elmo/elmo_config.json'
         self.ELMO_WEIGHTS = '/mnt/data/QA_DL/elmo/elmo_2x4096_512_2048cnn_2xhighway_weights.hdf5'

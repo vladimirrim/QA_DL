@@ -62,6 +62,7 @@ if __name__ == '__main__':
                             start_positions=torch.tensor(start_pos).to(device),
                             end_positions=torch.tensor(end_pos).to(device))
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), config.MAX_GRAD_NORM)
             train_loss += float(loss)
             optimizer.step()
             scheduler.step()
