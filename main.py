@@ -94,9 +94,9 @@ if __name__ == '__main__':
     with open(config.LOG_DIR + 'val_losses.pkl', 'wb') as f:
         pickle.dump(val_losses, f)
 
-    print(f'Starting evaluation')
+    print(f'Starting evaluation', flush=True)
     dev_dataset = get_text_question_ans_dataset(dev_data)
     evaluator.evaluate(dev_dataset)
-    print(f'Starting evaluation on best model on validation')
+    print(f'Starting evaluation on best model on validation', flush=True)
     model.load_state_dict(torch.load(config.LOG_DIR + 'bert_best_val.ckpt'))
     evaluator.evaluate(dev_dataset)
