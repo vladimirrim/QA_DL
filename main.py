@@ -1,57 +1,98 @@
-import glob
-import re
+import json
+import os
+import time
 
 import torch
-from transformers import BertTokenizer, BertForQuestionAnswering
+import pickle
+
+from configs import Config
+from data_loader import DataLoader, get_text_question_ans_dataset
+from evaluation import Evaluator
+from model import BertForQuestionAnswering
 
 
-class Dataset:
-    def __init__(self):
-        self.story = ""
-        self.stories = []
-        self.queries = []
-        self.answers = []
-
-    def preprocessLine(self, line):
-        tokens = line.split()
-        story = self.story
-        if tokens[0] == '1':
-            self.story = ""
-        if '?' in line:
-            self.answers.append(tokens[-3])
-            self.queries.append(' '.join(tokens[1:-3]))
-            self.stories.append(story)
-        else:
-            self.story += ' ' + ' '.join(tokens[1:])
+def initializeFolders(config):
+    if not os.path.exists(config.LOG_DIR):
+        os.makedirs(config.LOG_DIR)
 
 
 if __name__ == '__main__':
-    prefix = '.data/tasks_1-20_v1-2/en-valid-10k/'
-    nlp = 'dataset_281937_1.txt'
-    test, train = Dataset(), Dataset()
-    for filename in glob.glob(prefix + '*test.txt'):
-        with open(filename) as f:
-            [test.preprocessLine(line) for line in f.readlines()]
+    config = Config()
+    dataLoader = DataLoader(config)
+    initializeFolders(config)
 
-    for filename in glob.glob(prefix + '*train.txt'):
-        with open(filename) as f:
-            [train.preprocessLine(line) for line in f.readlines()]
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    model = BertForQuestionAnswering.from_pretrained('bert-large-uncased-whole-word-masking-finetuned-squad')
+    print('Starting loading data', flush=True)
+    with open(config.TRAIN_DATASET, 'r') as train_json, open(config.DEV_DATASET, 'r') as dev_json:
+        train_data = json.load(train_json)
+        dev_data = json.load(dev_json)
 
-    total = 0
-    tp = 0
-    for q, a, s in zip(test.queries, test.answers, test.stories):
-        question, text = q, s
-        input_text = "[CLS] " + question + " [SEP] " + text + " [SEP]"
-        input_ids = tokenizer.encode(input_text)
-        token_type_ids = [0 if i <= input_ids.index(102) else 1 for i in range(len(input_ids))]
-        start_scores, end_scores = model(torch.tensor([input_ids]), token_type_ids=torch.tensor([token_type_ids]))
-        all_tokens = tokenizer.convert_ids_to_tokens(input_ids)
-        predict = re.sub(' ##', '', ' '.join(all_tokens[torch.argmax(start_scores): torch.argmax(end_scores) + 1])).replace('the', '')
-        tp += int(predict.replace(' ', '') == a)
-        total += 1
-    print(tp / total)
+    train_data_loader = dataLoader.get_data_loader(train_data)
+    dev_data_loader = dataLoader.get_data_loader(dev_data)
 
+    model = BertForQuestionAnswering(config)
+    model = model.to(config.DEVICE)
 
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), config.LR,
+                                 weight_decay=0.000001)
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.3)
+    epochs = 3
+    device = 'cuda'
+    model.to(device)
+    evaluator = Evaluator(model, dataLoader.tokenizer, config)
+    start = time.time()
+    losses = []
+    val_losses = []
+    best_val_loss = 10000
+    print('Starting training', flush=True)
+    for epoch in range(epochs):
+        model.train()
+        train_loss = 0
+        for i, (texts, masks, start_pos, end_pos) in enumerate(train_data_loader):
+            optimizer.zero_grad()
+            loss, _ = model(texts.to(device),
+                            mask=masks.to(device),
+                            start_positions=torch.tensor(start_pos).to(device),
+                            end_positions=torch.tensor(end_pos).to(device))
+            loss.backward()
+            train_loss += float(loss)
+            optimizer.step()
+            if (i + 1) % 100 == 0:
+                torch.save(model.state_dict(), config.LOG_DIR + 'bert.ckpt')
+                print(f'Model saved on {i} iteration!', flush=True)
+                end = time.time()
+                print(f'Elapsed time: {end - start}', flush=True)
+                start = end
 
+                model.eval()
+                val_loss = 0
+                cnt = 0
+                with torch.no_grad():
+                    for texts, masks, start_pos, end_pos in dev_data_loader:
+                        loss, _ = model(texts.to(device),
+                                        mask=masks.to(device),
+                                        start_positions=torch.tensor(start_pos).to(device),
+                                        end_positions=torch.tensor(end_pos).to(device))
+                        val_loss += float(loss)
+                        cnt += 1
+                val_losses.append(val_loss / cnt)
+                losses.append(train_loss / 100)
+                train_loss = 0
+                print(f'Loss train: {losses[-1]}', flush=True)
+                print(f'Loss dev: {val_losses[-1]}', flush=True)
+                if best_val_loss > val_losses[-1]:
+                    best_val_loss = val_losses[-1]
+                    torch.save(model.state_dict(), config.LOG_DIR + 'bert_best_val.ckpt')
+                    print(f'Best model on validation saved on {i} iteration!', flush=True)
+                model.train()
+
+    with open(config.LOG_DIR + 'losses.pkl', 'wb') as f:
+        pickle.dump(losses, f)
+    with open(config.LOG_DIR + 'val_losses.pkl', 'wb') as f:
+        pickle.dump(val_losses, f)
+
+    print(f'Starting evaluation', flush=True)
+    dev_dataset = get_text_question_ans_dataset(dev_data)
+    evaluator.evaluate(dev_dataset)
+    print(f'Starting evaluation on best model on validation', flush=True)
+    model.load_state_dict(torch.load(config.LOG_DIR + 'bert_best_val.ckpt'))
+    evaluator.evaluate(dev_dataset)
