@@ -10,7 +10,7 @@ from transformers import get_linear_schedule_with_warmup, AdamW
 from configs import Config
 from data_loader import DataLoader, get_text_question_ans_dataset
 from evaluation import Evaluator
-from model import BertForQuestionAnswering
+from model import BertForQuestionAnswering, BertForQuestionAnsweringConvLSTM
 
 
 def initializeFolders(config):
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     train_data_loader = dataLoader.get_data_loader(train_data)
     dev_data_loader = dataLoader.get_data_loader(dev_data)
 
-    model = BertForQuestionAnswering(config)
+    model = BertForQuestionAnsweringConvLSTM(config)
     model = model.to(config.DEVICE)
 
     epochs = 3

@@ -82,18 +82,18 @@ class BertForQuestionAnsweringConvLSTM(nn.Module):
     def __init__(self, config, conv_hidden_dims=None):
         super().__init__()
         if conv_hidden_dims is None:
-            conv_hidden_dims = [8, 16, 4]
+            conv_hidden_dims = [4, 16, 4]
         self.bert = BertModel.from_pretrained(config.BERT_MODEL)
         self.bert.eval()
-        self.convLstm = lst = ConvLSTM(input_size=(16, 16), input_dim=3, hidden_dim=conv_hidden_dims,
-                                       kernel_size=(3, 3),
+        self.convLstm = ConvLSTM(input_size=(1, 768), input_dim=1, hidden_dim=conv_hidden_dims,
+                                       kernel_size=(1, 15),
                                        num_layers=3,
                                        batch_first=True,
                                        bias=True,
                                        return_all_layers=False)
         self.flatten_for_qa = nn.Flatten(start_dim=2)
         self.qa_outputs = nn.Sequential(
-            nn.Linear(conv_hidden_dims[-1] * 16 * 16, 512),
+            nn.Linear(conv_hidden_dims[-1] * 768, 512),
             nn.ReLU(),
             nn.Dropout(p=0.5),
             nn.Linear(512, 128),
@@ -109,7 +109,7 @@ class BertForQuestionAnsweringConvLSTM(nn.Module):
         output = self.bert(input_ids, attention_mask=mask)
 
         output = output[0]
-        output = output.reshape(output.shape[0], output.shape[1], 3, 16, 16)
+        output = output.unsqueeze(2).unsqueeze(3)
         output = self.convLstm(output)
         output = output[0][0]
         sequence_output = self.flatten_for_qa(output)
