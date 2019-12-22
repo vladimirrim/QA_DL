@@ -1,16 +1,15 @@
 import json
 import os
+import pickle
 import time
 
 import torch
-import pickle
 
 from configs import Config
 from data_loader import DataLoader, get_text_question_ans_dataset
 from elmo import create_elmo
 from evaluation import Evaluator
-from model import BertForQuestionAnswering, BertForQuestionAnsweringLSTM, BertForQuestionAnsweringConvLSTM, \
-    BertForQuestionAnsweringElmo
+from model import BertForQuestionAnsweringElmoLSTM
 
 
 def initializeFolders(config):
@@ -32,7 +31,7 @@ if __name__ == '__main__':
     train_data_loader = dataLoader.get_data_loader(train_data)
     dev_data_loader = dataLoader.get_data_loader(dev_data)
 
-    model = BertForQuestionAnsweringElmo(config)
+    model = BertForQuestionAnsweringElmoLSTM(config)
     model = model.to(config.DEVICE)
 
     optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), config.LR,
