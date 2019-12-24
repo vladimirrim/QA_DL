@@ -171,7 +171,7 @@ class BertForQuestionAnsweringElmo(nn.Module):
         return loss, F.softmax(logits.masked_fill((1 - mask[:, :, None]).bool(), float('-inf')), dim=1)
 
 
-class BertForQuestionAnsweringElmoLSTM(nn.Module):
+class BertForQuestionAnsweringElmoConvLSTM(nn.Module):
 
     def __init__(self, config, hidden_lstm_dim=512):
         super().__init__()
@@ -183,13 +183,15 @@ class BertForQuestionAnsweringElmoLSTM(nn.Module):
                                  num_layers=2,
                                  batch_first=True,
                                  bidirectional=True)
-        self.lstm = nn.LSTM(input_size=768 + 2 * hidden_lstm_dim,
-                            hidden_size=hidden_lstm_dim,
-                            num_layers=2,
-                            batch_first=True,
-                            bidirectional=True)
+        self.convLstm = ConvLSTM(input_size=(1, 768 + 2 * hidden_lstm_dim), input_dim=1, hidden_dim=[4, 16, 4],
+                                 kernel_size=(1, 15),
+                                 num_layers=3,
+                                 batch_first=True,
+                                 bias=True,
+                                 return_all_layers=False)
+        self.flatten_for_qa = nn.Flatten(start_dim=2)
         self.qa_outputs = nn.Sequential(
-            nn.Linear(hidden_lstm_dim * 2, 512),
+            nn.Linear(4 * (768 + 2 * hidden_lstm_dim), 512),
             nn.ReLU(),
             nn.Dropout(p=0.5),
             nn.Linear(512, 128),
@@ -212,7 +214,12 @@ class BertForQuestionAnsweringElmoLSTM(nn.Module):
 
         sequence_output = output[0]
         sequence_output = torch.cat((sequence_output, h_n.unsqueeze(1).repeat(1, sequence_output.shape[1], 1)), dim=2)
-        sequence_output, _ = self.lstm(sequence_output)
+
+        sequence_output = sequence_output.unsqueeze(2).unsqueeze(3)
+        sequence_output = self.convLstm(sequence_output)
+        sequence_output = sequence_output[0][0]
+        sequence_output = self.flatten_for_qa(sequence_output)
+
         logits = self.qa_outputs(sequence_output)
         loss = None
 

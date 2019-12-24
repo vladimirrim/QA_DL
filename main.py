@@ -11,7 +11,7 @@ from configs import Config
 from data_loader import DataLoader, get_text_question_ans_dataset
 from elmo import create_elmo
 from evaluation import Evaluator
-from model import BertForQuestionAnsweringElmoLSTM
+from model import BertForQuestionAnsweringElmoConvLSTM
 
 
 def initializeFolders(config):
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     train_data_loader = dataLoader.get_data_loader(train_data)
     dev_data_loader = dataLoader.get_data_loader(dev_data)
 
-    model = BertForQuestionAnsweringElmoLSTM(config)
+    model = BertForQuestionAnsweringElmoConvLSTM(config)
     model = model.to(config.DEVICE)
 
     epochs = 3
