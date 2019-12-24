@@ -1,0 +1,212 @@
+Starting loading data
+Starting training
+Model saved on 99 iteration!
+Elapsed time: 111.39901781082153
+Loss train: 4.4076965093612674
+Loss dev: 2.9705560182660355
+Best model on validation saved on 99 iteration!
+Model saved on 199 iteration!
+Elapsed time: 183.86809968948364
+Loss train: 2.6822622919082644
+Loss dev: 2.1287472421023512
+Best model on validation saved on 199 iteration!
+Model saved on 299 iteration!
+Elapsed time: 184.67216777801514
+Loss train: 2.1055342066287994
+Loss dev: 1.6939522052675948
+Best model on validation saved on 299 iteration!
+Model saved on 399 iteration!
+Elapsed time: 182.8971357345581
+Loss train: 1.7090894198417663
+Loss dev: 1.4405721036881363
+Best model on validation saved on 399 iteration!
+Model saved on 499 iteration!
+Elapsed time: 183.49094319343567
+Loss train: 1.5903622460365296
+Loss dev: 1.3328911004288826
+Best model on validation saved on 499 iteration!
+Model saved on 599 iteration!
+Elapsed time: 182.86665391921997
+Loss train: 1.4321087515354156
+Loss dev: 1.2803119902783724
+Best model on validation saved on 599 iteration!
+Model saved on 699 iteration!
+Elapsed time: 183.52810859680176
+Loss train: 1.4191673254966737
+Loss dev: 1.2695699741803304
+Best model on validation saved on 699 iteration!
+Model saved on 799 iteration!
+Elapsed time: 183.43917655944824
+Loss train: 1.3035475850105285
+Loss dev: 1.221469951417162
+Best model on validation saved on 799 iteration!
+Model saved on 899 iteration!
+Elapsed time: 183.47387433052063
+Loss train: 1.2638032585382462
+Loss dev: 1.1672367036651454
+Best model on validation saved on 899 iteration!
+Model saved on 999 iteration!
+Elapsed time: 182.95860195159912
+Loss train: 1.2533990770578385
+Loss dev: 1.119418782891387
+Best model on validation saved on 999 iteration!
+Model saved on 1099 iteration!
+Elapsed time: 183.20338106155396
+Loss train: 1.2075026524066925
+Loss dev: 1.0847616220385299
+Best model on validation saved on 1099 iteration!
+Model saved on 1199 iteration!
+Elapsed time: 183.2061676979065
+Loss train: 1.1966018068790436
+Loss dev: 1.0993738152820212
+Model saved on 1299 iteration!
+Elapsed time: 182.60333466529846
+Loss train: 1.1381029778718947
+Loss dev: 1.0763503609543636
+Best model on validation saved on 1299 iteration!
+Model saved on 1399 iteration!
+Elapsed time: 183.41273283958435
+Loss train: 1.1051955085992813
+Loss dev: 1.0570086830638232
+Best model on validation saved on 1399 iteration!
+Model saved on 1499 iteration!
+Elapsed time: 183.72648549079895
+Loss train: 1.1500531607866287
+Loss dev: 1.0471919426028593
+Best model on validation saved on 1499 iteration!
+Model saved on 99 iteration!
+Elapsed time: 232.6287281513214
+Loss train: 0.8735670620203018
+Loss dev: 1.0574962129247003
+Model saved on 199 iteration!
+Elapsed time: 182.78146529197693
+Loss train: 0.8802900844812394
+Loss dev: 1.1027992923642687
+Model saved on 299 iteration!
+Elapsed time: 182.7555878162384
+Loss train: 0.8414219334721565
+Loss dev: 1.0799225729364188
+Model saved on 399 iteration!
+Elapsed time: 182.91252875328064
+Loss train: 0.8382032561302185
+Loss dev: 1.074139555810029
+Model saved on 499 iteration!
+Elapsed time: 182.77619886398315
+Loss train: 0.839044879078865
+Loss dev: 1.0514062324953821
+Model saved on 599 iteration!
+Elapsed time: 182.46828317642212
+Loss train: 0.8087721174955368
+Loss dev: 1.040486602276718
+Best model on validation saved on 599 iteration!
+Model saved on 699 iteration!
+Elapsed time: 184.5073790550232
+Loss train: 0.8650715231895447
+Loss dev: 1.030154064220468
+Best model on validation saved on 699 iteration!
+Model saved on 799 iteration!
+Elapsed time: 183.2709255218506
+Loss train: 0.8196560788154602
+Loss dev: 1.0461643875571731
+Model saved on 899 iteration!
+Elapsed time: 182.69785404205322
+Loss train: 0.7964627847075463
+Loss dev: 1.0345369324165306
+Model saved on 999 iteration!
+Elapsed time: 181.92807531356812
+Loss train: 0.7912730526924133
+Loss dev: 1.0195830275975362
+Best model on validation saved on 999 iteration!
+Model saved on 1099 iteration!
+Elapsed time: 183.2061493396759
+Loss train: 0.7916228896379471
+Loss dev: 1.0517480466032276
+Model saved on 1199 iteration!
+Elapsed time: 182.19411373138428
+Loss train: 0.8167009192705155
+Loss dev: 0.9829943285087229
+Best model on validation saved on 1199 iteration!
+Model saved on 1299 iteration!
+Elapsed time: 183.52740049362183
+Loss train: 0.8024484360218048
+Loss dev: 0.9846832770757724
+Model saved on 1399 iteration!
+Elapsed time: 182.21577763557434
+Loss train: 0.7985843232274056
+Loss dev: 1.0231325993883795
+Model saved on 1499 iteration!
+Elapsed time: 182.28271746635437
+Loss train: 0.7531530302762985
+Loss dev: 1.01912595447481
+Model saved on 99 iteration!
+Elapsed time: 230.96848678588867
+Loss train: 0.6002580940723419
+Loss dev: 1.0792424771452198
+Model saved on 199 iteration!
+Elapsed time: 182.0318865776062
+Loss train: 0.5681224277615547
+Loss dev: 1.0985593023695477
+Model saved on 299 iteration!
+Elapsed time: 182.11161947250366
+Loss train: 0.5662095287442207
+Loss dev: 1.1317172439604843
+Model saved on 399 iteration!
+Elapsed time: 181.88081455230713
+Loss train: 0.5745351742208004
+Loss dev: 1.093212932193835
+Model saved on 499 iteration!
+Elapsed time: 182.24060153961182
+Loss train: 0.5698708546161652
+Loss dev: 1.098486398785843
+Model saved on 599 iteration!
+Elapsed time: 182.15712451934814
+Loss train: 0.5624744948744774
+Loss dev: 1.09989867370981
+Model saved on 699 iteration!
+Elapsed time: 182.292950630188
+Loss train: 0.5510573583841324
+Loss dev: 1.1156289812196722
+Model saved on 799 iteration!
+Elapsed time: 181.83386778831482
+Loss train: 0.5604563376307488
+Loss dev: 1.1093086177203322
+Model saved on 899 iteration!
+Elapsed time: 181.9739968776703
+Loss train: 0.5460213732719421
+Loss dev: 1.1145689150830007
+Model saved on 999 iteration!
+Elapsed time: 181.80341148376465
+Loss train: 0.5571401345729828
+Loss dev: 1.1246007986636977
+Model saved on 1099 iteration!
+Elapsed time: 181.65472793579102
+Loss train: 0.573327904343605
+Loss dev: 1.076181178574735
+Model saved on 1199 iteration!
+Elapsed time: 181.6421835422516
+Loss train: 0.5675505185127259
+Loss dev: 1.0982786546717036
+Model saved on 1299 iteration!
+Elapsed time: 181.9021589756012
+Loss train: 0.5714040639996528
+Loss dev: 1.0898640022994324
+Model saved on 1399 iteration!
+Elapsed time: 182.27243089675903
+Loss train: 0.5697865128517151
+Loss dev: 1.0892928838729858
+Model saved on 1499 iteration!
+Elapsed time: 182.32322359085083
+Loss train: 0.554817920923233
+Loss dev: 1.0862721834775697
+Starting evaluation
+EM: 0.5458845789971618
+F1: 0.5458845496177673
+Precision: 0.6708608865737915
+Recall: 0.6654682755470276
+Loss: 2.203054011702104
+Starting evaluation on best model on validation
+EM: 0.5397350993377483
+F1: 0.5397350788116455
+Precision: 0.6684957146644592
+Recall: 0.6608325242996216
+Loss: 2.0208194888871582
