@@ -12,7 +12,6 @@ def plot_losses(losses, val_losses, save_path):
 
 
 def load_losses(path_train, path_val):
-    train_losses, val_losses = None, None
     with open(path_train, 'rb') as train_file:
         train_losses = pickle.load(train_file)
     with open(path_val, 'rb') as val_file:
@@ -21,7 +20,7 @@ def load_losses(path_train, path_val):
 
 
 def main():
-    experiment = 'ALBERT_LSTM'
+    experiment = 'BERT_CONVLSTM'
     train_path = './experiment_results/' + experiment + '/losses.pkl'
     val_path = './experiment_results/' + experiment + '/val_losses.pkl'
     save_path = './experiment_results/' + experiment + '/losses.png'
